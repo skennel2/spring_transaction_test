@@ -8,7 +8,7 @@ public class Main {
 		try(AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfig.class)){
 			context.scan("org.almansa.app");
 			
-			SomeService service = context.getBean(SomeService.class);
+			BookShopService service = context.getBean(BookShopService.class);
 
 		}
 	}
