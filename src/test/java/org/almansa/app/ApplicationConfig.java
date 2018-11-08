@@ -33,9 +33,4 @@ public class ApplicationConfig {
 		NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource());
 		return jdbcTemplate;
 	}
-	
-	@Bean
-	public Logger logger() {
-		return new ConsoleLogger();
-	}
 }

@@ -44,6 +44,7 @@ public class ProgrammaticTransactionTest {
 		try {
 			addAccount(1, "123", "123-1234-3212", 0);
 			addAccount(1, "123", "242-7434-3436", 0); // duplicated pk
+			
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
 			transactionManager.rollback(status);
@@ -60,6 +61,7 @@ public class ProgrammaticTransactionTest {
 		try {
 			addAccount(1, "222", "123-1234-3212", 0);
 			addAccount(2, "222", "242-7434-3436", 0);
+			
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
 			transactionManager.rollback(status);
@@ -72,13 +74,15 @@ public class ProgrammaticTransactionTest {
 
 	@Test(expected = DataAccessException.class)
 	public void 예외가_발생하는_트랜젝션_메소드호출_() {
-		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+		DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
+		//dtd.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NEVER);
+		TransactionStatus status = transactionManager.getTransaction(dtd);
 		try {
 			addAccount(398, "333", "123-1234-3212", 0);
 			addAccount(324, "333", "242-7434-3436", 0);
 
-			test_예외가_발생하는_트랜젝션();
-
+			duplicatedPkInsert();
+			
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
 			transactionManager.rollback(status);
@@ -88,15 +92,34 @@ public class ProgrammaticTransactionTest {
 			assertEquals(new Integer(0), rowCount);
 		}
 	}
+	
+	private void duplicatedPkInsert() {
+		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+		if(status.isNewTransaction()) {
+			System.out.println("");
+		}
+		try {
+			addAccount(1, "123", "123-1234-3212", 0);
+			addAccount(1, "123", "242-7434-3436", 0); // duplicated pk
+			
+			transactionManager.commit(status);
+			
+		} catch (DataAccessException ex) {
+			transactionManager.rollback(status);
+			throw ex;
+		}
+	}
 
 	private void deleteAll() {
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
 			jdbcTemplate.update("DELETE FROM ACCOUNT", new HashMap<String, Object>());
+			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
-			transactionManager.rollback(status);
+			if(status.isNewTransaction()) {
+				transactionManager.rollback(status);
+			}
 		}
-		transactionManager.commit(status);
 	}
 
 	private void addAccount(int id, String customerName, String accountNumber, int initialAmountOfBalance) {
