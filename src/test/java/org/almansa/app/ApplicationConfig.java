@@ -15,9 +15,9 @@ public class ApplicationConfig {
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("org.h2.Driver");
-		dataSource.setUrl("jdbc:h2:~/bank");
+		dataSource.setUrl("jdbc:h2:~/bank;autocommit=off");
 		dataSource.setUsername("sa");
-		
+
 		return dataSource;
 	}
 	
