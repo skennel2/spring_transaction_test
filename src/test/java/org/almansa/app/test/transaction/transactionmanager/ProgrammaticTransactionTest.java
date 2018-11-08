@@ -1,10 +1,11 @@
-package org.almansa.app;
+package org.almansa.app.test.transaction.transactionmanager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.almansa.app.ApplicationConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,9 +96,6 @@ public class ProgrammaticTransactionTest {
 	
 	private void duplicatedPkInsert() {
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
-		if(status.isNewTransaction()) {
-			System.out.println("");
-		}
 		try {
 			addAccount(1, "123", "123-1234-3212", 0);
 			addAccount(1, "123", "242-7434-3436", 0); // duplicated pk
@@ -116,9 +114,7 @@ public class ProgrammaticTransactionTest {
 			jdbcTemplate.update("DELETE FROM ACCOUNT", new HashMap<String, Object>());
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
-			if(status.isNewTransaction()) {
-				transactionManager.rollback(status);
-			}
+			transactionManager.rollback(status);
 		}
 	}
 
