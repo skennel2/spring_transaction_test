@@ -15,7 +15,7 @@ public class ApplicationConfig {
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("org.h2.Driver");
-		dataSource.setUrl("jdbc:h2:~/book");
+		dataSource.setUrl("jdbc:h2:~/bank");
 		dataSource.setUsername("sa");
 		
 		return dataSource;
@@ -32,5 +32,10 @@ public class ApplicationConfig {
 	public NamedParameterJdbcTemplate  jdbcTemplate() {
 		NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(dataSource());
 		return jdbcTemplate;
+	}
+	
+	@Bean
+	public Logger logger() {
+		return new ConsoleLogger();
 	}
 }

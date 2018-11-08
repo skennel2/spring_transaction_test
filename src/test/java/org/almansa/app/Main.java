@@ -8,8 +8,8 @@ public class Main {
 		try(AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ApplicationConfig.class)){
 			context.scan("org.almansa.app");
 			
-			BookShopService service = context.getBean(BookShopService.class);
-
+			AccountService service = context.getBean(AccountService.class);
+			service.deleteAllAccount();
 		}
 	}
 
