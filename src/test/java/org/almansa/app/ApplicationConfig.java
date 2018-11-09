@@ -8,16 +8,19 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @Configuration
+@EnableTransactionManagement // @Transactional을 사용할수 있게 설정해주는 어노테이션
 public class ApplicationConfig {
 
 	@Bean
 	public DataSource dataSource() {
 		DriverManagerDataSource dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("org.h2.Driver");
-		dataSource.setUrl("jdbc:h2:~/bank;autocommit=off");
+		dataSource.setUrl("jdbc:h2:~/bank;autocommit=on");
+		
 		dataSource.setUsername("sa");
 
 		return dataSource;
@@ -30,6 +33,7 @@ public class ApplicationConfig {
 	public PlatformTransactionManager transactionManager() {
 		DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
 		transactionManager.setDataSource(dataSource());
+		
 		return transactionManager;
 	}
 	

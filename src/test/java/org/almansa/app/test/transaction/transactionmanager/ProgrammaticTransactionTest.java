@@ -76,7 +76,6 @@ public class ProgrammaticTransactionTest {
 	@Test(expected = DataAccessException.class)
 	public void 예외가_발생하는_트랜젝션_메소드호출_() {
 		DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
-		//dtd.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_NEVER);
 		TransactionStatus status = transactionManager.getTransaction(dtd);
 		try {
 			addAccount(398, "333", "123-1234-3212", 0);
