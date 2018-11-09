@@ -94,8 +94,8 @@ public class TemplateTransactionTest {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
 				try {
-					addAccountPropagationRequires(1, "123", "123-1234-3212", 0);
-					addAccountPropagationRequires(2, "123", "242-7434-3436", 0);
+					addAccountPropagationRequires(1, "123", "123-1234-3212", 0); // rollback
+					addAccountPropagationRequires(2, "123", "242-7434-3436", 0); // rollback 
 
 					throw new RuntimeException("Some Business Exception"); // 비지니스 예외 발생
 				} catch (RuntimeException ex) {
@@ -117,8 +117,8 @@ public class TemplateTransactionTest {
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
-				addAccountPropagationRequiresNew(1, "123", "123-1234-3212", 0); // 현 트랜잭션과 무관하게 커밋되어 db에 반영된다.
-				addAccountPropagationRequiresNew(1, "123", "242-7434-3436", 0); // 롤백
+				addAccountPropagationRequiresNew(1, "123", "123-1234-3212", 0); // commit
+				addAccountPropagationRequiresNew(1, "123", "242-7434-3436", 0); // rollback
 			}
 		});
 	}
@@ -134,7 +134,7 @@ public class TemplateTransactionTest {
 
 	private void addAccountPropagationRequires(int id, String customerName, String accountNumber,
 			int initialAmountOfBalance) {
-		transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
