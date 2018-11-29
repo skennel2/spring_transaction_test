@@ -1,5 +1,7 @@
 package org.almansa.app.test.transaction.transactionmanager;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,6 +55,8 @@ public class TemplateTransactionTest {
 				addAccountPropagationRequires(2, "123", "242-7434-3436", 0);
 			}
 		});
+		
+		assertEquals(new Integer(2), getAllAccountCount());
 	}
 	
 	/*
@@ -62,26 +66,36 @@ public class TemplateTransactionTest {
 	@Test
 	public void test_TransactionCallback() {
 		
-		transactionTemplate.execute(new TransactionCallback<String>() {
+		String value = transactionTemplate.execute(new TransactionCallback<String>() {
 			@Override
 			public String doInTransaction(TransactionStatus status) {	
-				return null;
+				return "Hello";
 			}
 		} );
+		
+		assertEquals("Hello", value);
 	}	
 
-	@Test(expected = DataAccessException.class)
-	public void test_예외가_발생하는_트랜젝션() {
+	@Test
+	public void test_처리하지_않는_비지니스_예외() {
 		transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
-				addAccountPropagationRequires(1, "123", "123-1234-3212", 0); // rollback
-				addAccountPropagationRequires(1, "123", "242-7434-3436", 0); // rollback
+				addAccountPropagationRequires(1, "123", "123-1234-3212", 0); 
+				addAccountPropagationRequires(2, "123", "242-7434-3436", 0); 
+
+				try {
+					throw new Exception("Some Business Exception");
+				} catch (Exception e) {
+				}
 			}
 		});
+		
+		// 처리되지 않은 예외까지 롤백이 적용되지 않는다. 
+		assertEquals(new Integer(2), getAllAccountCount()); 
 	}
-
+	
 	/*
 	 * 비지니스 예외에 대한 롤백처리 DB에 접근하는 JdbcTemplate는 기본적으로 모든 트랜젝션 관련 예외를
 	 * DataAccessException 형태로 던진다. 하지만 그 이외의 비지니스 예외에 대해서도 롤백을 처리해야 할 경우가 있다. 그런
@@ -97,8 +111,8 @@ public class TemplateTransactionTest {
 					addAccountPropagationRequires(1, "123", "123-1234-3212", 0); // rollback
 					addAccountPropagationRequires(2, "123", "242-7434-3436", 0); // rollback 
 
-					throw new RuntimeException("Some Business Exception"); // 비지니스 예외 발생
-				} catch (RuntimeException ex) {
+					throw new Exception("Some Business Exception"); // 비지니스 예외 발생
+				} catch (Exception ex) {
 					// try - catch 문으로 비지니스 로직을 catch후 TransactionStatus의 setRollbackOnly를 호출하면
 					// 해당 트랜젝션을 롤백한다.
 					status.setRollbackOnly();
@@ -106,7 +120,28 @@ public class TemplateTransactionTest {
 			}
 		});
 	}
-
+	
+	@Test(expected=RuntimeException.class)
+	public void test_처리되지_않은_비지니스_예외() {
+		try {
+			transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+				@Override
+				protected void doInTransactionWithoutResult(TransactionStatus status) {
+					addAccountPropagationRequires(1, "123", "123-1234-3212", 0); //rollback
+					addAccountPropagationRequires(2, "123", "242-7434-3436", 0); //rollback
+					
+					throw new RuntimeException("Some Business Exception"); // 언체크 비지니스 예외 발생
+				}
+			});
+		}catch(RuntimeException ex) {
+			throw ex;
+		}finally {
+			// 언체크예외의 경우 catch문으로 예외를 잡아서 status.setRollbackOnly()를 호출해주는 
+			// 코딩은 필요없다.  
+			assertEquals(new Integer(0), getAllAccountCount());
+		}
+	}
+	
 	/*
 	 * DefaultTransactionDefinition로 정의하는 트랜젝션 전파 레벨중, REQUIRES_NEW는 이미 시작된 트랜잭션이
 	 * 존재한다면 잠시 중지시키고 새로운 트랜젝션을 시작한다.
@@ -118,16 +153,23 @@ public class TemplateTransactionTest {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
 				addAccountPropagationRequiresNew(1, "123", "123-1234-3212", 0); // commit
-				addAccountPropagationRequiresNew(1, "123", "242-7434-3436", 0); // rollback
+				addAccountPropagationRequiresNew(1, "123", "242-7434-3436", 0); // pk 에러 rollback
 			}
 		});
 	}
-
-	private void deleteAll() {
+	
+	/*
+	 * DefaultTransactionDefinition로 정의하는 트랜젝션 전파 레벨중, REQUIRES는 이미 시작된 트랜잭션이
+	 * 존재한다면 그 트랜젝션에 참여한다.
+	 */	
+	@Test(expected = DataAccessException.class)
+	public void test_예외가_발생하는_트랜젝션() {
+		transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRED);
 		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
 			@Override
 			protected void doInTransactionWithoutResult(TransactionStatus status) {
-				jdbcTemplate.update("DELETE FROM ACCOUNT", new HashMap<String, Object>());
+				addAccountPropagationRequires(1, "123", "123-1234-3212", 0); // rollback
+				addAccountPropagationRequires(1, "123", "242-7434-3436", 0); // rollback
 			}
 		});
 	}
@@ -170,6 +212,15 @@ public class TemplateTransactionTest {
 		});
 	}
 
+	private void deleteAll() {
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus status) {
+				jdbcTemplate.update("DELETE FROM ACCOUNT", new HashMap<String, Object>());
+			}
+		});
+	}
+	
 	private Integer getAllAccountCount() {
 		return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ACCOUNT", new EmptySqlParameterSource(),
 				Integer.class);

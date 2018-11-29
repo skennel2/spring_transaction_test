@@ -32,6 +32,7 @@ public class ApplicationConfig {
 	@Bean
 	public PlatformTransactionManager transactionManager() {
 		DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+		// DataSourceTransactionManager는 JdbcDaoSupport의 하위 클래스라서 dataSource를 연결해주어야한다.
 		transactionManager.setDataSource(dataSource());
 		
 		return transactionManager;

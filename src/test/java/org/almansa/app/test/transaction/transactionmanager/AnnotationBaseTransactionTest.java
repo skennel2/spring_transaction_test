@@ -1,5 +1,7 @@
 package org.almansa.app.test.transaction.transactionmanager;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +51,8 @@ public class AnnotationBaseTransactionTest {
 	public void test_예외가_발생하지_않는_트랜젝션() {
 		addAccount(111, "aaa", "123-1234-3212", 0);
 		addAccount(222, "bbb", "123-1234-3212", 0);
+		
+		assertEquals(new Integer(2), getAllAccountCount());
 	}	
 
 	@Transactional

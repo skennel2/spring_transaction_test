@@ -40,7 +40,12 @@ public class ProgrammaticTransactionTest {
 	 */
 	@Test(expected = DataAccessException.class)
 	public void test_예외가_발생하는_트랜젝션() {
-		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+		
+		// DefaultTransactionDefinition는 격리수준, 전파수준등의 트랜젝션 설정을 담고있다. 
+		DefaultTransactionDefinition dtf = new DefaultTransactionDefinition();
+		
+		// getTransaction() 호출로 리턴받는 TransactionStatus는 트랜젝션의 상태를 추적한다. 
+		TransactionStatus status = transactionManager.getTransaction(dtf);
 
 		try {
 			addAccount(1, "123", "123-1234-3212", 0);
