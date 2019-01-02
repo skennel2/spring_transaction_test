@@ -38,11 +38,12 @@ public class ProgrammaticTransactionTest {
 	/*
 	 * 트랜젝션이 제대로 동작하지 않는다면 DB의 AutoCommit 여부를 확인할것.
 	 */
-	@Test(expected = DataAccessException.class)
+	@Test
 	public void test_예외가_발생하는_트랜젝션() {
 		
 		// DefaultTransactionDefinition는 격리수준, 전파수준등의 트랜젝션 설정을 담고있다. 
 		DefaultTransactionDefinition dtf = new DefaultTransactionDefinition();
+		dtf.setIsolationLevel(DefaultTransactionDefinition.ISOLATION_READ_COMMITTED); // 격리수준 설정
 		
 		// getTransaction() 호출로 리턴받는 TransactionStatus는 트랜젝션의 상태를 추적한다. 
 		TransactionStatus status = transactionManager.getTransaction(dtf);
@@ -54,11 +55,10 @@ public class ProgrammaticTransactionTest {
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
 			transactionManager.rollback(status);
-			throw ex;
-		} finally {
-			Integer rowCount = getAllAccountCount();
-			assertEquals(new Integer(0), rowCount);
 		}
+		
+		Integer rowCount = getAllAccountCount();
+		assertEquals(new Integer(0), rowCount);
 	}
 
 	@Test
@@ -78,7 +78,7 @@ public class ProgrammaticTransactionTest {
 		}
 	}
 
-	@Test(expected = DataAccessException.class)
+	@Test
 	public void 예외가_발생하는_트랜젝션_메소드호출_() {
 		DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
 		TransactionStatus status = transactionManager.getTransaction(dtd);
@@ -91,15 +91,17 @@ public class ProgrammaticTransactionTest {
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
 			transactionManager.rollback(status);
-			throw ex;
-		} finally {
-			Integer rowCount = getAllAccountCount();
-			assertEquals(new Integer(0), rowCount);
 		}
+		
+		Integer rowCount = getAllAccountCount();
+		assertEquals(new Integer(0), rowCount);
 	}
 	
 	private void duplicatedPkInsert() {
-		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+		DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
+		//dtd.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
+		
+		TransactionStatus status = transactionManager.getTransaction(dtd);
 		try {
 			addAccount(1, "123", "123-1234-3212", 0);
 			addAccount(1, "123", "242-7434-3436", 0); // duplicated pk

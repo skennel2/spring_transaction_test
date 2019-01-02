@@ -28,6 +28,7 @@ public class ApplicationConfig {
 	
 	/*
 	 * PlatformTransactionManager는 여러 트랜젝션 API를 기술독립적으로 캡슐화하는 메인 트랜젝션 인터페이스이다. 
+	 * JDBC의 트랜젝션 처리, JTA, Hibernate의 독립적인 트랜젝션 처리를 PlatformTransactionManager 라는 하나의 인터페이스로 추상화하였다.
 	 */
 	@Bean
 	public PlatformTransactionManager transactionManager() {
