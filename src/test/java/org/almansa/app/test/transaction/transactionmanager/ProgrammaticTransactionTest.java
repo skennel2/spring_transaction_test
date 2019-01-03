@@ -49,8 +49,8 @@ public class ProgrammaticTransactionTest {
 		TransactionStatus status = transactionManager.getTransaction(dtf);
 
 		try {
-			addAccount(1, "123", "123-1234-3212", 0);
-			addAccount(1, "123", "242-7434-3436", 0); // duplicated pk
+			addAccount(1, "손흥민", "123-1234-3212", 0);
+			addAccount(1, "박지성", "242-7434-3436", 0); // 중복된 pk DataAccessException를 던질것이다.
 			
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
@@ -65,28 +65,8 @@ public class ProgrammaticTransactionTest {
 	public void test_예외가_발생하지_않는_트랜젝션() {
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {
-			addAccount(1, "222", "123-1234-3212", 0);
-			addAccount(2, "222", "242-7434-3436", 0);
-			
-			transactionManager.commit(status);
-		} catch (DataAccessException ex) {
-			transactionManager.rollback(status);
-			throw ex;
-		} finally {
-			Integer rowCount = getAllAccountCount();
-			assertEquals(new Integer(2), rowCount);
-		}
-	}
-
-	@Test
-	public void 예외가_발생하는_트랜젝션_메소드호출_() {
-		DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
-		TransactionStatus status = transactionManager.getTransaction(dtd);
-		try {
-			addAccount(398, "333", "123-1234-3212", 0);
-			addAccount(324, "333", "242-7434-3436", 0);
-
-			duplicatedPkInsert();
+			addAccount(1, "손흥민", "123-1234-3212", 0);
+			addAccount(2, "박지성", "242-7434-3436", 0);
 			
 			transactionManager.commit(status);
 		} catch (DataAccessException ex) {
@@ -94,26 +74,9 @@ public class ProgrammaticTransactionTest {
 		}
 		
 		Integer rowCount = getAllAccountCount();
-		assertEquals(new Integer(0), rowCount);
+		assertEquals(new Integer(2), rowCount);
 	}
 	
-	private void duplicatedPkInsert() {
-		DefaultTransactionDefinition dtd = new DefaultTransactionDefinition();
-		//dtd.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
-		
-		TransactionStatus status = transactionManager.getTransaction(dtd);
-		try {
-			addAccount(1, "123", "123-1234-3212", 0);
-			addAccount(1, "123", "242-7434-3436", 0); // duplicated pk
-			
-			transactionManager.commit(status);
-			
-		} catch (DataAccessException ex) {
-			transactionManager.rollback(status);
-			throw ex;
-		}
-	}
-
 	private void deleteAll() {
 		TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 		try {

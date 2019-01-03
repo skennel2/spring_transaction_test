@@ -34,31 +34,34 @@ public class AnnotationBaseTransactionTest {
 		deleteAll();
 	}
 
-	// @Rollback은 테스트 메소드가 완료된 후 테스트 관리 트랜잭션을 롤백할지 여부를 나타내는 데 사용되는 테스트 주석입니다.
+	// @Rollback은 테스트 메소드가 완료된 후 테스트 관리 트랜잭션을 롤백할지 여부를 나타내는 데 사용되는 테스트 주석.
 	// 테스트 컨텍스트에서 @Transactional이 붙은 메소드는 자동으로 롤백되는데, 그 디폴트 동작을 막는 옵션이다.
 	// @Commit과 @Rollback(false) 이 둘은 같은 의미이다.
-	@Rollback(true) 
+	//@Rollback(true) 
 	@Transactional(propagation = Propagation.REQUIRED)
-	@Test(expected = DataAccessException.class)
+	@Test(expected=DataAccessException.class)
 	public void test_예외가_발생하는_트랜젝션() {
-		addAccount(1, "1", "123-1234-3212", 0);
-		addAccount(1, "1", "123-1234-3212", 0);
+		try {
+			addAccount(1, "손흥민", "123-1234-3212", 0);
+			addAccount(1, "박지성", "123-1234-3212", 0);
+		}catch(DataAccessException ex) {
+			throw ex;
+		}
 	}
 	
-	@Rollback(true) 
 	@Transactional(propagation = Propagation.REQUIRED)
 	@Test
 	public void test_예외가_발생하지_않는_트랜젝션() {
-		addAccount(111, "aaa", "123-1234-3212", 0);
-		addAccount(222, "bbb", "123-1234-3212", 0);
+		addAccount(111, "손흥민", "123-1234-3212", 0);
+		addAccount(222, "박지성", "123-1234-3212", 0);
 		
 		assertEquals(new Integer(2), getAllAccountCount());
 	}	
 
 	@Transactional
 	public void duplicatedPkInsert() {
-		addAccount(2, "2", "123-1234-3212", 0);
-		addAccount(2, "3", "242-7434-3436", 0);
+		addAccount(2, "손흥민", "123-1234-3212", 0);
+		addAccount(2, "박지성", "242-7434-3436", 0);
 	}
 
 	@Transactional
@@ -66,7 +69,7 @@ public class AnnotationBaseTransactionTest {
 		jdbcTemplate.update("DELETE FROM ACCOUNT", new HashMap<String, Object>());
 	}
 
-	@Transactional(propagation = Propagation.REQUIRED)
+	@Transactional
 	public void addAccount(int id, String customerName, String accountNumber, int initialAmountOfBalance) {
 		MapSqlParameterSource parameterSource = new MapSqlParameterSource();
 		parameterSource.addValue("ID", id);
