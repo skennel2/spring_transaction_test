@@ -81,7 +81,14 @@ public class AnnotationBaseTransactionTest {
 				"INSERT INTO ACCOUNT(ID, CUSTOMER_NAME, ACCOUNT_NUMBER, BALANCE) VALUES(:ID, :CUSTOMER_NAME, :ACCOUNT_NUMBER, :BALANCE)",
 				parameterSource);
 	}
-
+	
+	/**
+	 * 
+	 * readOnly 옵션은 org.springframework.transaction.annotation.Transactional 패키지에만 존재 (javax.Transactional에는 존재하지 않음) 
+	 * dbms별로 동작하는 것이 다르다. 이를테면 PostgresSQL에서는 해당 트렌젝션에서는 SELECT를 제외한 DDL, DML, DCL은 동작하지 않는다. 
+	 * JPA에서는 플러시 모드를 MANUAL로 설정해주어 불필요한 변경체크를 막는듯하다. 
+	 */
+	@Transactional(readOnly = true)
 	public Integer getAllAccountCount() {
 		return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ACCOUNT", new EmptySqlParameterSource(),
 				Integer.class);
